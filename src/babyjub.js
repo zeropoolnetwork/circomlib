@@ -1,6 +1,8 @@
 const bn128 = require("snarkjs").bn128;
 const bigInt = require("snarkjs").bigInt;
+const {isSquare, ToneliShanks} = require("./tonelishanks.js");
 
+exports.SWUSelect = SWUSelect;
 exports.addPoint = addPoint;
 exports.mulPointEscalar = mulPointEscalar;
 exports.inCurve = inCurve;
@@ -21,6 +23,61 @@ exports.p = bn128.r;
 exports.A = bigInt("168700");
 exports.D = bigInt("168696");
 
+
+function WeierstrassCoefficients() {    
+    const p = exports.p;
+    const s = exports.A.sub(exports.D).mul(bigInt("4").inverse(p)).affine(p);
+    const t = exports.A.add(exports.D).mul(bigInt("6").inverse(p)).affine(p);
+    
+    return [
+        s.mul(s).sub(t.mul(t).mul(bigInt("3"))).affine(p),
+        t.mul(t).mul(t).mul(bigInt("2")).sub(t.mul(s).mul(s)).affine(p)
+    ]
+
+}
+
+function WeierstrassExpr(x) {
+    const p = exports.p;
+    const [WA, WB] = WeierstrassCoefficients();
+    const x3 = x.mul(x).mul(x);
+    return x3.add(x.mul(WA)).add(WB).affine(p);
+}
+
+function Weierstrass2Edwards(w) {
+    const p = exports.p;
+    const s = exports.A.sub(exports.D).mul(bigInt("4").inverse(p)).affine(p);
+    const t = exports.A.add(exports.D).mul(bigInt("6").inverse(p)).affine(p);
+    return [
+        w[0].sub(t).mul(w[1].inverse(p)).affine(p),
+        w[0].sub(t).sub(s).mul(w[0].sub(t).add(s).inverse(p)).affine(p)
+     ]
+}
+
+
+
+
+
+//The Shallue-Woestijne-Ulas Algorithm for point selection on the curve
+
+function SWUSelect(t) {
+    const p = exports.p;
+    t = bigInt(t);
+    // 70297686841582442057940100194421294204074774541372193073554880658839844120511n == sha256("t regularization")
+    t = t.isZero(p) ? bigInt("70297686841582442057940100194421294204074774541372193073554880658839844120511") : t;
+    const [WA, WB] = WeierstrassCoefficients();
+    
+    const g = WeierstrassExpr(bigInt.one);
+    const t2g = t.mul(t).mul(g).affine(p);
+    const t4g2 = t2g.mul(t2g).affine(p);
+
+    const x2 = WB.neg(p).mul(WA.inverse(p)).mul(bigInt.one.add(t4g2.add(t2g).inverse(p))).affine(p);
+    const x3 = t2g.mul(x2).affine(p);
+
+    const x = isSquare(WeierstrassExpr(x2)) ? x2 : x3;
+    const y = ToneliShanks(WeierstrassExpr(x));
+
+    return Weierstrass2Edwards([x,y]);
+} 
 
 function addPoint(a,b) {
     const q = bn128.r;
