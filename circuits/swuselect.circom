@@ -71,7 +71,17 @@ template SWUSelect() {
       signCalc.in[i] <== xbits.out[i];
   }
 
-  out[0] <== xbits.in * (1 - 2 * signCalc.out);
-  out[1] <== w2e.out[1];
+  component dbl1 = BabyDbl();
+  dbl1.x <== xbits.in * (1 - 2 * signCalc.out);
+  dbl1.y <== w2e.out[1];
+  component dbl2 = BabyDbl();
+  dbl2.x <== dbl1.xout;
+  dbl2.y <== dbl1.yout;
+  component dbl3 = BabyDbl();
+  dbl3.x <== dbl2.xout;
+  dbl3.y <== dbl2.yout;
+
+  out[0] <== dbl3.x;
+  out[1] <== dbl3.y;
 
 }

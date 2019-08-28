@@ -75,8 +75,9 @@ function SWUSelect(t) {
 
     const x = isSquare(WeierstrassExpr(x2)) ? x2 : x3;
     const y = bn128.Fr.sqrt(WeierstrassExpr(x));
-
-    return Weierstrass2Edwards([x,y]);
+    let P = Weierstrass2Edwards([x,y]);
+    if (P[0] <= bigInt("10944121435919637611123202872628637544274182200208017171849102093287904247808")) P[0]=P[0].neg(p);
+    return mulPointEscalar(P, bigInt(8));
 } 
 
 function addPoint(a,b) {
