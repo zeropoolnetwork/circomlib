@@ -1,6 +1,6 @@
 const bn128 = require("snarkjs").bn128;
 const bigInt = require("snarkjs").bigInt;
-const {isSquare, ToneliShanks} = require("./tonelishanks.js");
+const isSquare = x=> bn128.Fr.sqrt(bigInt(x))!==null;
 
 exports.SWUSelect = SWUSelect;
 exports.addPoint = addPoint;
@@ -74,7 +74,7 @@ function SWUSelect(t) {
     const x3 = t2g.mul(x2).affine(p);
 
     const x = isSquare(WeierstrassExpr(x2)) ? x2 : x3;
-    const y = ToneliShanks(WeierstrassExpr(x));
+    const y = bn128.Fr.sqrt(WeierstrassExpr(x));
 
     return Weierstrass2Edwards([x,y]);
 } 

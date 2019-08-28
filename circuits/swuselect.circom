@@ -1,5 +1,7 @@
 include "tonelishanks.circom";
-include "comparators.circom";
+include "compconstant.circom";
+
+include "bitify.circom";
 
 template WeierstrassExpr(A,B) {
   signal input in;
@@ -53,13 +55,23 @@ template SWUSelect() {
   component issqr = isSquare();
   issqr.in <== w2.out;
 
-  component sqrt = ToneliShanks();
-  sqrt.in <== w3.out + (w2.out-w3.out)*issqr.out;
+  component squareroot = ToneliShanks();
+  squareroot.in <== w3.out + (w2.out-w3.out)*issqr.out;
 
   component w2e = Weierstrass2Edwards(S, T);
   w2e.in[0] <== w3.in + (w2.in-w3.in)*issqr.out;
-  w2e.in[1] <== sqrt.out;
+  w2e.in[1] <== squareroot.out;
 
-  out[0] <== w2e.out[0];
+
+  component xbits = Num2Bits_strict()
+  xbits.in <== w2e.out[0]
+  
+  component signCalc = CompConstant(10944121435919637611123202872628637544274182200208017171849102093287904247808);
+  for (var i=0; i<254; i++) {
+      signCalc.in[i] <== xbits.out[i];
+  }
+
+  out[0] <== xbits.in * (1 - 2 * signCalc.out);
   out[1] <== w2e.out[1];
+
 }

@@ -14,10 +14,10 @@ describe("Square root test", () => {
         assert.equal(cirDef.nVars, 3);
 
         const circuit = new snarkjs.Circuit(cirDef);
+        const in_data = snarkjs.bigInt(4);
+        const witness = circuit.calculateWitness({ "in": in_data });
 
-        const witness = circuit.calculateWitness({ "in": "4" });
+        assert(witness[1].mul(witness[1]).equals(in_data));
 
-        assert(witness[0].equals(snarkjs.bigInt(1)));
-        assert(witness[1].equals(snarkjs.bigInt("21888242871839275222246405745257275088548364400416034343698204186575808495615")));
     });
 });
