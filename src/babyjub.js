@@ -9,6 +9,7 @@ exports.inCurve = inCurve;
 exports.inSubgroup = inSubgroup;
 exports.packPoint = packPoint;
 exports.unpackPoint = unpackPoint;
+exports.subgroupDecompress = subgroupDecompress;
 exports.Generator = [
     bigInt("995203441582195749578291179787384436505546430278305826713579947235728471134"),
     bigInt("5472060717959818805561601436314318772137091100104008585924551046643952123905")
@@ -22,6 +23,23 @@ exports.subOrder = exports.order.shr(3);
 exports.p = bn128.r;
 exports.A = bigInt("168700");
 exports.D = bigInt("168696");
+
+
+function subgroupDecompress(x) {
+    x = bigInt(x);
+    const p = exports.p;
+    const x2 = x.mul(x, p);
+    const t = exports.A.mul(x2).sub(bigInt.one).mul(exports.D.mul(x2).sub(bigInt.one).inverse(p)).affine(p);
+    const y = bn128.Fr.sqrt(t);
+
+    if(inSubgroup([x,y]))
+        return [x,y];
+    
+    if(inSubgroup([x,-y]))
+        return [x,-y];
+    
+    throw("Not a compressed point at subgroup");
+}
 
 
 function WeierstrassCoefficients() {    

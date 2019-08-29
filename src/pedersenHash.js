@@ -10,9 +10,11 @@ const nWindowsPerSegment = 50;
 exports.hash = pedersenHash;
 exports.getBasePoint = getBasePoint;
 
-function pedersenHash(msg) {
+function pedersenHash(msg, bitlength) {
     const bitsPerSegment = windowSize*nWindowsPerSegment;
-    const bits = buffer2bits(msg);
+    let bits = buffer2bits(msg);
+    if (typeof bitlength !== "undefined")
+        bits = bits.slice(0, bitlength);
 
     const nSegments = Math.floor((bits.length - 1)/(windowSize*nWindowsPerSegment)) +1;
 
