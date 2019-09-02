@@ -10,6 +10,7 @@ template eddsa2mimc() {
   signal input R;
   signal input S;
   signal input m;
+  signal input enabled;
 
   component Qp = SubgroupDecompress_Strict();
   Qp.x <== Q;
@@ -54,7 +55,7 @@ template eddsa2mimc() {
   RHQ.x2<==HQ.out[0];
   RHQ.y2<==HQ.out[1];
   
-  SG8.out[0] === RHQ.xout;
+  (SG8.out[0] - RHQ.xout) * enabled === 0;
   // SG8.out[1] === RHQ.yout; //Subgroup point is determined by x coordinate
 
 }

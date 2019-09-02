@@ -37,9 +37,10 @@ describe("eddsa test", () => {
 
       const cirDef = await compiler(path.join(__dirname, "circuits", "eddsa2mimc_test.circom"));
       const circuit = new snarkjs.Circuit(cirDef);
+      const enabled = snarkjs.bigInt("1");
 
       const input = {
-        Q, m, R, S
+        Q, m, R, S, enabled
       };
 
       const witness = circuit.calculateWitness(input);

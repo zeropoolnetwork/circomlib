@@ -37,9 +37,10 @@ describe("ECVRF test", () => {
 
       const cirDef = await compiler(path.join(__dirname, "circuits", "ecvrfpedersen_test.circom"));
       const circuit = new snarkjs.Circuit(cirDef);
+      const enabled = snarkjs.bigInt("1");
 
       const input = {
-        Q:Q[0], alpha, gamma:proof[0], c:proof[1], s:proof[2]
+        Q:Q[0], alpha, gamma:proof[0], c:proof[1], s:proof[2], enabled
       };
 
       const witness = circuit.calculateWitness(input);

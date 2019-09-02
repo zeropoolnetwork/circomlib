@@ -15,6 +15,7 @@ template ecvrfpedersen() {
   signal input c;        //proof element
   signal input s;        //proof element
   signal input alpha;    //message
+  signal input enabled;
 
   var G8 = [
     5299619240641551281634865583518297030282874472190772894086521144482721001553,
@@ -114,5 +115,5 @@ template ecvrfpedersen() {
   }
 
   
-  C.out[0]===c;
+  (C.out[0] - c) * enabled === 0;
 }
