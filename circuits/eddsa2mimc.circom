@@ -1,4 +1,5 @@
 include "compconstant.circom";
+include "comparators.circom";
 include "pointbits.circom";
 include "mimc.circom";
 include "bitify.circom";
@@ -11,6 +12,10 @@ template eddsa2mimc() {
   signal input S;
   signal input m;
   signal input enabled;
+
+  component Q_zero = IsZero();
+  Q_zero.in <== Q;
+  Q_zero.out*enabled === 0;
 
   component Qp = SubgroupDecompress_Strict();
   Qp.x <== Q;

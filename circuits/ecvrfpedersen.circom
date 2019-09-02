@@ -24,7 +24,7 @@ template ecvrfpedersen() {
 
   component Q_zero = IsZero();
   Q_zero.in <== Q;
-  Q_zero.out === 0;
+  Q_zero.out*enabled === 0;
 
   component gamma_zero = IsZero();
   gamma_zero.in <== gamma;
