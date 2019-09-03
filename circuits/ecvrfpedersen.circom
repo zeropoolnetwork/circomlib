@@ -28,7 +28,7 @@ template ecvrfpedersen() {
 
   component gamma_zero = IsZero();
   gamma_zero.in <== gamma;
-  gamma_zero.out === 0;
+  gamma_zero.out*enabled === 0;
 
   component QP = SubgroupDecompress_Strict();
   QP.x <== Q;
