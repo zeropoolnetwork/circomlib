@@ -3,6 +3,9 @@ const Contract = require("./evmasm");
 const Web3 = require("web3");
 
 function createCode(seed, n) {
+  seed = typeof seed === "undefined" ? "mimc" : seed;
+  n = typeof n === "undefined" ? 91 : n;
+
   let ci = Web3Utils.keccak256(seed);
   let web3 = new Web3();
   const C = new Contract();
@@ -112,3 +115,31 @@ function createCode(seed, n) {
   sponge();
   return C.createTxData();
 }
+
+const abi = [
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "a",
+        "type": "uint256"
+      },
+      {
+      "name": "b",
+      "type": "uint256"
+      }
+    ],
+    "name": "sponge",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  }
+];
+
+module.exports = {createCode, abi}
