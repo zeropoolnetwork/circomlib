@@ -1,16 +1,17 @@
 const Web3Utils = require("web3-utils");
-const Contract = require("./evmasm");
+const Contract = require("circomlib/src/evmasm");
 const Web3 = require("web3");
 
 function createCode(seed, n) {
   seed = typeof seed === "undefined" ? "mimc" : seed;
   n = typeof n === "undefined" ? 91 : n;
 
-  let ci = Web3Utils.keccak256(seed);
+  
   let web3 = new Web3();
   const C = new Contract();
 
   function mimc7_inline() {
+    let ci = Web3Utils.keccak256(seed);
     // x k 
     C.swap(1); // k x
     C.push("0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001");  // q k x
@@ -53,16 +54,17 @@ function createCode(seed, n) {
         C.mulmod();     // c=t^6 t q k q
         C.mulmod();     // r=t^7 k q
     }
-    C.addmod();     // res=t^7+k returnpos
+    C.addmod();     // res=t^7+k
   }
 
+  let funccaln=0;
   function funcall(name, argn) {
-    C.pc();
-    C.push(3+argn);
-    C.add();
-    for(let i = 1; i <= argn; i++)
+    C._pushLabel(`funccall${funccaln}`);
+    for(let i = argn; i > 0; i--)
       C.swap(i);
     C.jmp(name);
+    C.label(`funccall${funccaln}`);
+    funccaln++;
   }
 
   function sponge() {
@@ -77,17 +79,19 @@ function createCode(seed, n) {
     C.dup(1);  // a 0 a q q b q
     mimc7_inline(); // h a q q b q
     C.addmod();    // r q b q
+
     C.dup(0);   // r r q b q
     C.dup(3);   // b r r q b q
     mimc7_inline(); // h r q b q
     C.addmod(); // h+r b q
     C.addmod(); // h+r+b return
+  
     C.swap(1);
     C.jmp();
   }
 
   //const signature = web3.eth.abi.encodeFunctionSignature(`merkleupdate(uint256[${nProof}],uint256,uint256[])`);  // function merkleupdate(uint256[nProof] rightbranch, uint256 i, uint256[] items)
-  const sig = web3.eth.abi.encodeFunctionSignature(`sponge(uint256,uin256)`);
+  const sig = web3.eth.abi.encodeFunctionSignature(`sponge(uint256,uint256)`);
 
   C.push(0x44);
   C.push("0x00");
@@ -100,13 +104,18 @@ function createCode(seed, n) {
   C.push(sig);
   C.eq();
   C.jmpi("start");
+
   C.invalid();
   C.label("start");
 
   C.push("0x24"); // b
+  C.mload()
   C.push("0x04"); // a b
+  C.mload()
+
   
   funcall("sponge", 2);
+
   C.push("0x00");
   C.mstore();     // Save it to pos 0;
   C.push("0x20");
@@ -141,5 +150,6 @@ const abi = [
     "type": "function"
   }
 ];
+
 
 module.exports = {createCode, abi}
